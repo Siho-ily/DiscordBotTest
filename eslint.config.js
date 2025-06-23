@@ -8,8 +8,7 @@ module.exports = [
 		},
 		rules: {
 			'arrow-spacing': ['warn', { before: true, after: true }],
-			'brace-style': ['error', 'stroustrup', { allowSingleLine: true }],
-			'comma-dangle': ['error', 'always-multiline'],
+			'brace-style': ['error', '1tbs', { allowSingleLine: true }],
 			'comma-spacing': 'error',
 			'comma-style': 'error',
 			curly: ['error', 'multi-line', 'consistent'],

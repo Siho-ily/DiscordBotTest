@@ -1,3 +1,10 @@
+# Folders
+.vscode/
 node_modules/
-.env
 dist/
+
+# Files
+.env
+config.json
+.DS_Store
+*.log
