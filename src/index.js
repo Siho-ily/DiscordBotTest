@@ -7,7 +7,7 @@
 const { Client, Events, GatewayIntentBits } = require('discord.js');
 
 // env 파일 로드 및 환경 변수 세팅
-require('dotenv').config({ path: './src/Base/.env' });
+require('dotenv').config({ path: './src/Config/.env' });
 const token = process.env.TOKEN;
 
 // Create a new client instance
