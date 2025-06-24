@@ -8,8 +8,7 @@ module.exports = [
 		},
 		rules: {
 			'arrow-spacing': ['warn', { before: true, after: true }],
-			'brace-style': ['error', 'stroustrup', { allowSingleLine: true }],
-			'comma-dangle': ['error', 'always-multiline'],
+			'brace-style': ['error', '1tbs', { allowSingleLine: true }],
 			'comma-spacing': 'error',
 			'comma-style': 'error',
 			curly: ['error', 'multi-line', 'consistent'],
@@ -25,10 +24,7 @@ module.exports = [
 			'no-inline-comments': 'error',
 			'no-lonely-if': 'error',
 			'no-multi-spaces': 'error',
-			'no-multiple-empty-lines': [
-				'error',
-				{ max: 2, maxEOF: 1, maxBOF: 0 },
-			],
+			'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1, maxBOF: 0 }],
 			'no-shadow': ['error', { allow: ['err', 'resolve', 'reject'] }],
 			'no-trailing-spaces': ['error'],
 			'no-var': 'error',
@@ -46,6 +42,7 @@ module.exports = [
 					asyncArrow: 'always',
 				},
 			],
+
 			'space-in-parens': 'error',
 			'space-infix-ops': 'error',
 			'space-unary-ops': 'error',
