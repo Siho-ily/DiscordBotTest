@@ -30,9 +30,9 @@ client.once(Events.ClientReady, (readyClient) => {
 
 // 핸들러 로딩
 try {
-	await loadHandlers(client);
+	await loadInitHandlers(client);
 } catch (err) {
-	console.error('[Init] 핸들러 전체 로딩 실패:', err);
+	console.error('[index] Init 핸들러 전체 로딩 실패:', err);
 	process.exit(1);
 }
 
