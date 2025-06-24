@@ -9,9 +9,9 @@ import eventHandler from './eventHandler.js';
  */
 export async function loadInitHandlers(client) {
 	const handlers = [
+		// { name: '컴포넌트', fn: componentHandler },
 		{ name: '명령어', fn: commandHandler },
 		{ name: '이벤트', fn: eventHandler },
-		// { name: '컴포넌트', fn: componentHandler },
 	];
 
 	for (const { name, fn } of handlers) {
