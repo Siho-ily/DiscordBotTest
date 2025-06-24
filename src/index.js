@@ -8,7 +8,7 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 
 // 모듈 가져오기
 import dotenv from 'dotenv';
-import { loadHandlers } from './Handlers/mainHandler.js';
+import { loadInitHandlers } from './Handlers/mainHandler.js';
 
 // env 파일 로드 및 환경 변수 세팅
 dotenv.config({ path: './src/Config/.env' });
@@ -24,9 +24,6 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 // 'Events.ClientReady' 이벤트는 클라이언트가 디스코드 API와 연결되고 준비가 완료되었을 때 발생
 // The distinction between `client: Client<boolean>` and `readyClient: Client<true>` is important for TypeScript developers.
 // It makes some properties non-nullable.
-client.once(Events.ClientReady, (readyClient) => {
-	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-});
 
 // 핸들러 로딩
 try {

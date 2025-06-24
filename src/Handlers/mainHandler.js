@@ -1,5 +1,5 @@
 import commandHandler from './commandHandler.js';
-// import eventHandler from './eventHandler.js';
+import eventHandler from './eventHandler.js';
 // 필요 시 추가 핸들러 import
 // import componentHandler from './componentHandler.js';
 
@@ -10,7 +10,7 @@ import commandHandler from './commandHandler.js';
 export async function loadInitHandlers(client) {
 	const handlers = [
 		{ name: '명령어', fn: commandHandler },
-		// { name: '이벤트', fn: eventHandler },
+		{ name: '이벤트', fn: eventHandler },
 		// { name: '컴포넌트', fn: componentHandler },
 	];
 
