@@ -1,4 +1,4 @@
-// get-commands.js
+// get-command-info.js
 import { REST, Routes } from 'discord.js';
 import { config } from 'dotenv';
 
@@ -14,13 +14,8 @@ async function fetchGuildCommands() {
 	try {
 		const commands = await rest.get(Routes.applicationGuildCommands(clientId, guildId));
 
-		console.log(`📋 등록된 명령어 (${commands.length}개):\n`);
-		for (const cmd of commands) {
-			console.log(`- ${cmd.name}`);
-			console.log(`  id: ${cmd.id}`);
-			console.log(`  permissions: ${cmd.default_member_permissions ?? '없음'}`);
-			console.log('---');
-		}
+		console.log(`📋 등록된 명령어 ${commands.length}개:\n`);
+		console.log(JSON.stringify(commands, null, 2));
 	} catch (err) {
 		console.error('❌ 명령어 목록 가져오기 실패:', err);
 	}

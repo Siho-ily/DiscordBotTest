@@ -9,8 +9,25 @@ const cooldown = new Collection();
 export const event = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
-		if (!interaction.isChatInputCommand()) return;
+		// 봇의 상호작용은 무시
 		if (interaction.user.bot) return;
+
+		// 🎯 자동완성 처리
+		if (interaction.isAutocomplete()) {
+			const command = interaction.client.slashCommands.get(interaction.commandName);
+			if (!command || typeof command.autocomplete !== 'function') return;
+
+			try {
+				await command.autocomplete(interaction); // 명령어 파일에 정의된 자동완성 함수 호출
+			} catch (err) {
+				console.error('[AutoComplete 오류]', err);
+			}
+			return;
+		}
+
+		// 📜 슬래시 명령어 처리
+		// interaction이 슬래시 명령어가 아니면 무시
+		if (!interaction.isChatInputCommand()) return;
 
 		const command = interaction.client.slashCommands.get(interaction.commandName);
 		if (!command) return;
@@ -21,8 +38,6 @@ export const event = {
 				flags: MessageFlags.Ephemeral,
 			});
 		}
-
-		const ctx = new CommandContext({ interaction });
 
 		// 쿨타임 처리
 		if (command.cooldown) {
@@ -42,6 +57,7 @@ export const event = {
 		}
 
 		try {
+			const ctx = new CommandContext({ interaction });
 			await command.execute(ctx);
 		} catch (e) {
 			console.error(`[InteractionCreate] 명령어 실행 중 오류 발생:`, e);

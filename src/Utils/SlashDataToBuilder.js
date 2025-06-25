@@ -93,15 +93,19 @@ function addOptionsToBuilder(builder, options) {
 				.setDescription(opt.description)
 				.setRequired(opt.required ?? false);
 
+			if (opt.autoComplete) {
+				option.setAutocomplete(true);
+			} else if (Array.isArray(opt.choices) && opt.choices.length > 0) {
+				option.addChoices(...opt.choices);
+			}
+
 			if (opt.nameLocalizations) option.setNameLocalizations(opt.nameLocalizations);
 			if (opt.descriptionLocalizations) option.setDescriptionLocalizations(opt.descriptionLocalizations);
-			if (Array.isArray(opt.choices) && opt.choices.length > 0) option.addChoices(...opt.choices);
 			if (opt.minLength !== undefined) option.setMinLength(opt.minLength);
 			if (opt.maxLength !== undefined) option.setMaxLength(opt.maxLength);
 			if (opt.minValue !== undefined) option.setMinValue(opt.minValue);
 			if (opt.maxValue !== undefined) option.setMaxValue(opt.maxValue);
 			if (opt.channelTypes) option.addChannelTypes(...opt.channelTypes);
-
 			return option;
 		});
 	}

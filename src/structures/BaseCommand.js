@@ -25,8 +25,10 @@ export class CommandData {
 		cooldown = 0,
 		ownerOnly = false,
 		execute,
+		autocomplete,
 		defaultMemberPermissions = null,
 		context = null,
+		autoComplete = null,
 		// 추가적인 필드가 필요할 경우 여기에 추가
 	}) {
 		// name 검사
@@ -119,6 +121,14 @@ export class CommandData {
 			throw new Error('context는 InteractionContextType 객체이어야합니다.');
 		}
 
+		// autoComplete 검사
+		if (autoComplete && typeof autoComplete !== 'boolean') {
+			throw new Error('autoComplete는 boolean이어야 합니다.');
+		}
+		if (autoComplete && (!autocomplete || typeof autocomplete !== 'function')) {
+			throw new Error('autocomplete가 true인 경우, autocomplete 함수가 필요합니다.');
+		}
+
 		// 값 할당
 		this.name = name;
 		this.aliases = aliases;
@@ -131,5 +141,7 @@ export class CommandData {
 		this.execute = execute;
 		this.defaultMemberPermissions = defaultMemberPermissions;
 		this.context = context;
+		this.autoComplete = autoComplete;
+		this.autocomplete = autocomplete;
 	}
 }
