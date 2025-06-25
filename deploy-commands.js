@@ -3,8 +3,21 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { config } from 'dotenv';
 import { readdirSync } from 'node:fs';
+import { ApplicationCommandOptionType } from 'discord.js';
 
 config({ path: './src/Config/.env' });
+
+const OPTION_TYPE_MAP = {
+	String: ApplicationCommandOptionType.String,
+	Integer: ApplicationCommandOptionType.Integer,
+	Boolean: ApplicationCommandOptionType.Boolean,
+	User: ApplicationCommandOptionType.User,
+	Channel: ApplicationCommandOptionType.Channel,
+	Role: ApplicationCommandOptionType.Role,
+	Mentionable: ApplicationCommandOptionType.Mentionable,
+	Number: ApplicationCommandOptionType.Number,
+	Attachment: ApplicationCommandOptionType.Attachment,
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,10 +45,23 @@ for (const folder of commandFolders) {
 			continue;
 		}
 
+		// 🔁 옵션 타입 변환
+		const fixedOptions = (command.options || []).map((opt) => {
+			const mappedType = OPTION_TYPE_MAP[opt.type];
+			if (!mappedType) {
+				throw new Error(`지원되지 않는 옵션 타입: ${opt.type} in ${file}`);
+			}
+
+			return {
+				...opt,
+				type: mappedType,
+			};
+		});
+
 		commands.push({
 			name: command.name,
 			description: command.description,
-			options: command.options || [],
+			options: fixedOptions,
 		});
 	}
 }
