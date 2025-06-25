@@ -14,8 +14,9 @@ export class CommandContext {
 		this.options = interaction?.options ?? null;
 
 		this.reply = (content) => {
-			if (!content || (typeof content === 'object' && !content.content)) {
-				console.warn('[reply] 빈 메시지 전송 시도 감지됨. 응답 중단.');
+			const payload = normalizeReplyContent(content);
+			if (!payload) {
+				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
 				return;
 			}
 
@@ -23,32 +24,68 @@ export class CommandContext {
 			if (this.type === 'slash') return interaction.reply(content);
 		};
 
-		this.deferReply = (options) => {
-			if (this.type === 'slash') return this.interaction.deferReply(options);
-			if (this.type === 'prefix')
-				return message.reply({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		this.deferReply = (content) => {
+			const payload = normalizeReplyContent(content);
+			if (!payload) {
+				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				return;
+			}
+
+			if (this.type === 'slash') return this.interaction.deferReply(payload);
+			if (this.type === 'prefix') return message.reply('이 기능은 슬래시 명령어에서만 사용 가능합니다.');
 		};
 
-		this.editReply = (options) => {
-			if (this.type === 'slash') return this.interaction.editReply(options);
-			if (this.type === 'prefix')
-				throw new Error({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		this.editReply = (content) => {
+			const payload = normalizeReplyContent(content);
+			if (!payload) {
+				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				return;
+			}
+
+			if (this.type === 'slash') return this.interaction.editReply(payload);
+			if (this.type === 'prefix') return message.reply('이 기능은 슬래시 명령어에서만 사용 가능합니다.');
 		};
 
-		this.followUp = (options) => {
-			if (this.type === 'slash') return this.interaction.followUp(options);
-			if (this.type === 'prefix')
-				throw new Error({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		this.followUp = (content) => {
+			const payload = normalizeReplyContent(content);
+			if (!payload) {
+				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				return;
+			}
+
+			if (this.type === 'slash') return this.interaction.followUp(payload);
+			if (this.type === 'prefix') return message.reply('이 기능은 슬래시 명령어에서만 사용 가능합니다.');
 		};
 
-		this.deleteReply = (options) => {
-			if (this.type === 'slash') return this.interaction.deleteReply(options);
-			if (this.type === 'prefix')
-				throw new Error({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		this.deleteReply = (content) => {
+			const payload = normalizeReplyContent(content);
+			if (!payload) {
+				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				return;
+			}
+
+			if (this.type === 'slash') return this.interaction.deleteReply(payload);
+			if (this.type === 'prefix') return message.reply('이 기능은 슬래시 명령어에서만 사용 가능합니다.');
 		};
 
-		this.getOption = (name) => {
-			return this.type === 'slash' ? this.options?.get(name) : this.args?.[0];
+		this.getOption = ({ name, index } = {}) => {
+			if (this.type === 'slash') return this.options?.get(name);
+			if (typeof index === 'number') return this.args?.[index];
+			if (typeof name === 'number') return this.args?.[name]; // index를 name으로 대신
+			return null;
 		};
 	}
+}
+function normalizeReplyContent(content) {
+	if (!content) return null;
+
+	if (typeof content === 'string') {
+		return { content };
+	}
+
+	if (typeof content === 'object' && content.content) {
+		return content;
+	}
+
+	return null;
 }

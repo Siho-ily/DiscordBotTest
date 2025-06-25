@@ -70,7 +70,7 @@ for (const folder of commandFolders) {
 const rest = new REST({ version: '10' }).setToken(token);
 
 try {
-	console.log(`🔄 슬래시 명령어 ${commands.length}개 등록 시도 중...`);
+	console.log(`🔄 슬래시 명령어 ${commands.length}개 등록 시도 중...\n[${commands.map((e) => e.name).join(' | ')}]`);
 	const data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
 	console.log(`✅ ${data.length}개 등록 완료.`);
 } catch (err) {
