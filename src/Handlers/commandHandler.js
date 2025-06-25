@@ -36,12 +36,17 @@ export default async function commandHandler(client) {
 }
 
 function registerCommand(client, command, fileURL) {
+	console.log(`[등록] ${command.name} from ${fileURL}`); // ✅ 이 로그 확인
 	// 기본 검증
 	if (!command.name || typeof command.execute !== 'function') {
 		console.warn(`[무시됨] ${command?.name ?? '알 수 없음'} → 필수 속성 누락`);
 		return;
 	}
+	if (client.commands.has(command.name)) {
+		console.warn(`[중복 명령어 이름] ${command.name} → 기존 명령어가 덮어쓰기 됩니다.`);
+	}
 
+	// 필수 속성 설정
 	command.__filePath = fileURL;
 
 	// Prefix 등록
@@ -57,7 +62,7 @@ function registerCommand(client, command, fileURL) {
 			client.slashDatas.push(builder.toJSON());
 			client.slashCommands.set(command.name, command);
 		} catch (e) {
-			throw new Error(`슬래시 명령어 등록 실패: ${command.name} - ${e.message}`);
+			console.warn(`[슬래시 등록 실패] ${command.name} → ${e.message}`);
 		}
 	}
 }

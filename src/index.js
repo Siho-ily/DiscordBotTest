@@ -4,7 +4,7 @@
 // Client: 디스코드 봇 클라이언트 인스턴스를 생성하는 클래스
 // Events: 디스코드 봇에서 발생하는 다양한 이벤트를 정의하는 객체
 // GatewayIntentBits: 디스코드 API와의 연결을 위한 권한을 설정하는데 사용되는 비트 플래그
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 
 // 모듈 가져오기
 import { config } from 'dotenv';

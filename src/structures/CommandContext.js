@@ -12,6 +12,11 @@ export class CommandContext {
 		this.options = interaction?.options ?? null;
 
 		this.reply = (content) => {
+			if (!content || (typeof content === 'object' && !content.content)) {
+				console.warn('[reply] 빈 메시지 전송 시도 감지됨. 응답 중단.');
+				return;
+			}
+
 			if (this.type === 'prefix') return message.reply(content);
 			if (this.type === 'slash') return interaction.reply(content);
 		};

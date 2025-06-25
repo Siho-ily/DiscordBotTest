@@ -1,4 +1,4 @@
-import { Collection, Events, InteractionType } from 'discord.js';
+import { Collection, Events, InteractionType, MessageFlags } from 'discord.js';
 import { config } from 'dotenv';
 import { CommandContext } from '../structures/CommandContext.js';
 
@@ -24,7 +24,7 @@ export const event = {
 				if (command.ownerOnly && !owners.includes(interaction.user.id)) {
 					return interaction.reply({
 						content: '**developers**만 이 명령어를 사용할 수 있습니다..',
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					});
 				}
 
@@ -37,7 +37,7 @@ export const event = {
 								content: `현재 쿨타임중입니다. 나중에 다시 시도하여주세요. <t:${Math.floor(
 									new Date(nowDate + waitedDate).getTime() / 1000
 								)}:R>.`,
-								ephemeral: true,
+								flags: MessageFlags.Ephemeral,
 							})
 							.then(() =>
 								setTimeout(
@@ -63,7 +63,7 @@ export const event = {
 			console.error(`[InteractionCreate] 명령어 실행 중 오류 발생`, e);
 			interaction.reply({
 				content: '오류가 발생하였습니다. 나중에 다시 시도하여주세요.',
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 	},

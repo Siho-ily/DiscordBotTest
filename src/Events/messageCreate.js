@@ -1,4 +1,4 @@
-import { ChannelType, Collection, Events } from 'discord.js';
+import { ChannelType, Collection, Events, MessageFlags } from 'discord.js';
 import { CommandContext } from '../structures/CommandContext.js';
 import dotenv from 'dotenv';
 
@@ -35,21 +35,21 @@ export const event = {
 
 		let command = client.commands.get(cmd) || client.commands.get(client.commandAliases.get(cmd));
 		if (!command) {
-			return message.reply(`\`${cmd}\` 명령어는 존재하지 않습니다.`);
+			return message.reply({ content: `\`${cmd}\` 명령어는 존재하지 않습니다.`, flags: MessageFlags.Ephemeral });
 		}
 
 		if (command.ownerOnly && !owners.includes(message.author.id)) {
-			return message.reply(`⛔ 해당 명령어는 개발자만 사용할 수 있습니다.`);
+			return message.reply({ content: `⛔ 해당 명령어는 개발자만 사용할 수 있습니다.`, flags: MessageFlags.Ephemeral });
 		}
 
 		if (!command.allowPrefix) {
-			return message.reply(`⚠️ 이 명령어는 슬래시 명령어로만 사용할 수 있습니다.`);
+			return message.reply({ content: `⚠️ 이 명령어는 슬래시 명령어로만 사용할 수 있습니다.`, flags: MessageFlags.Ephemeral });
 		}
 
 		const cooldownKey = `${command.name}-${message.author.id}`;
 		if (cooldown.has(cooldownKey)) {
 			const remaining = Math.floor(cooldown.get(cooldownKey) / 1000);
-			return message.reply(`⏳ 쿨타임 중입니다. <t:${remaining}:R> 다시 시도해주세요.`);
+			return message.reply({ content: `⏳ 쿨타임 중입니다. <t:${remaining}:R> 다시 시도해주세요.`, flags: MessageFlags.Ephemeral });
 		}
 
 		// 실행
@@ -58,7 +58,7 @@ export const event = {
 			await command.execute(context);
 		} catch (err) {
 			console.error(`[PrefixCommand Error]`, err);
-			message.reply(`❌ 명령어 실행 중 오류가 발생했습니다.`);
+			message.reply({ content: `❌ 명령어 실행 중 오류가 발생했습니다.`, flags: MessageFlags.Ephemeral });
 		}
 
 		// 쿨다운 등록
