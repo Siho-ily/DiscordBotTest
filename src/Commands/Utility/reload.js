@@ -1,5 +1,6 @@
 import { MessageFlags } from 'discord.js';
 import { CommandData } from '../../structures/BaseCommand.js';
+import { SlashDataToBuilder } from '../../Utils/SlashDataToBuilder.js';
 
 export default new CommandData({
 	name: 'reload',
@@ -56,18 +57,34 @@ async function reloadCommand(client, commandName) {
 		const updatedPath = `${oldCommand.__filePath}?update=${Date.now()}`;
 		const { default: newCommand } = await import(updatedPath);
 
-		// 경로 유지
 		newCommand.__filePath = oldCommand.__filePath;
 
-		// 명령어 등록 갱신
+		// 접두사 명령어 등록
 		client.commands.set(newCommand.name, newCommand);
-
 		for (const alias of newCommand.aliases || []) {
 			client.commandAliases.set(alias, newCommand.name);
 		}
 
+		// 슬래시 명령어 등록
+		if (newCommand.description && Array.isArray(newCommand.options)) {
+			try {
+				const builder = SlashDataToBuilder(newCommand);
+				client.slashCommands.set(newCommand.name, newCommand);
+
+				const idx = client.slashDatas.findIndex((d) => d.name === newCommand.name);
+				if (idx !== -1) {
+					client.slashDatas[idx] = builder.toJSON();
+				} else {
+					client.slashDatas.push(builder.toJSON());
+				}
+				console.log(`[Reload Slash] ${newCommand.name} 슬래시 명령어 갱신 완료`);
+			} catch (e) {
+				console.warn(`[Reload Slash] ${newCommand.name} 슬래시 등록 실패 → ${e.message}`);
+			}
+		}
+
 		return {
-			success: `✅ \`${newCommand.name}\` 커맨드가 성공적으로 리로드되었습니다.`,
+			success: `✅ \`${newCommand.name}\` 명령어가 성공적으로 리로드되었습니다.`,
 		};
 	} catch (error) {
 		console.error(`[Reload Command] ${commandName} 오류:`, error);
