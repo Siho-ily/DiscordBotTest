@@ -26,12 +26,25 @@ export class CommandContext {
 		this.deferReply = (options) => {
 			if (this.type === 'slash') return this.interaction.deferReply(options);
 			if (this.type === 'prefix')
-				return message.reply({ content: '슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+				return message.reply({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
 		};
 
 		this.editReply = (options) => {
 			if (this.type === 'slash') return this.interaction.editReply(options);
-			throw new Error('editReply는 슬래시 명령어에서만 사용할 수 있습니다.');
+			if (this.type === 'prefix')
+				throw new Error({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		};
+
+		this.followUp = (options) => {
+			if (this.type === 'slash') return this.interaction.followUp(options);
+			if (this.type === 'prefix')
+				throw new Error({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		};
+
+		this.deleteReply = (options) => {
+			if (this.type === 'slash') return this.interaction.deleteReply(options);
+			if (this.type === 'prefix')
+				throw new Error({ content: '해당 명령어는 슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
 		};
 
 		this.getOption = (name) => {
