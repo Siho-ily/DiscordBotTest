@@ -17,6 +17,8 @@ export class CommandContext {
 			const payload = normalizeReplyContent(content);
 			if (!payload) {
 				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				if (this.type === 'slash') return interaction.reply({ content: '잘못된 응답 형식입니다.', flags: MessageFlags.Ephemeral });
+				if (this.type === 'prefix') return message.reply('잘못된 응답 형식입니다.');
 				return;
 			}
 
@@ -25,9 +27,11 @@ export class CommandContext {
 		};
 
 		this.deferReply = (content) => {
-			const payload = normalizeReplyContent(content);
-			if (!payload) {
-				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+			const payload = normalizeReplyContent(content, 'deferReplay');
+			if (!payload && payload !== undefined) {
+				console.warn('[CommandContext] 잘못된 응답 형식. 응답 생략됨.');
+				if (this.type === 'slash') return interaction.deferReply({ content: '잘못된 응답 형식입니다.', flags: MessageFlags.Ephemeral });
+				if (this.type === 'prefix') return message.reply('잘못된 응답 형식입니다.');
 				return;
 			}
 
@@ -38,7 +42,9 @@ export class CommandContext {
 		this.editReply = (content) => {
 			const payload = normalizeReplyContent(content);
 			if (!payload) {
-				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				console.warn('[CommandContext] 잘못된 응답 형식. 응답 생략됨.');
+				if (this.type === 'slash') return interaction.editReply({ content: '잘못된 응답 형식입니다.', flags: MessageFlags.Ephemeral });
+				if (this.type === 'prefix') return message.reply('잘못된 응답 형식입니다.');
 				return;
 			}
 
@@ -49,7 +55,9 @@ export class CommandContext {
 		this.followUp = (content) => {
 			const payload = normalizeReplyContent(content);
 			if (!payload) {
-				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				console.warn('[CommandContext] 잘못된 응답 형식. 응답 생략됨.');
+				if (this.type === 'slash') return interaction.followUp({ content: '잘못된 응답 형식입니다.', flags: MessageFlags.Ephemeral });
+				if (this.type === 'prefix') return message.reply('잘못된 응답 형식입니다.');
 				return;
 			}
 
@@ -60,7 +68,9 @@ export class CommandContext {
 		this.deleteReply = (content) => {
 			const payload = normalizeReplyContent(content);
 			if (!payload) {
-				console.warn('[reply] 잘못된 응답 형식. 응답 생략됨.');
+				console.warn('[CommandContext] 잘못된 응답 형식. 응답 생략됨.');
+				if (this.type === 'slash') return interaction.deleteReply({ content: '잘못된 응답 형식입니다.', flags: MessageFlags.Ephemeral });
+				if (this.type === 'prefix') return message.reply('잘못된 응답 형식입니다.');
 				return;
 			}
 
@@ -76,15 +86,23 @@ export class CommandContext {
 		};
 	}
 }
-function normalizeReplyContent(content) {
+function normalizeReplyContent(content, expectedType = 'default') {
+	// 응답 형식에 따른 기대 타입 처리
+	if (expectedType === 'deferReplay' && content === undefined) {
+		return undefined;
+	}
+
 	if (!content) return null;
 
 	if (typeof content === 'string') {
 		return { content };
 	}
 
-	if (typeof content === 'object' && content.content) {
-		return content;
+	if (typeof content === 'object') {
+		// content, embeds, components, files 중 하나라도 있으면 유효
+		if ('content' in content || 'embeds' in content || 'components' in content || 'files' in content || 'attachments' in content) {
+			return content;
+		}
 	}
 
 	return null;

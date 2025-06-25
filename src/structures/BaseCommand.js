@@ -43,7 +43,19 @@ export class CommandData {
 		}
 		// options 내부 객체 검사
 		for (const option of options) {
-			const VALID_TYPES = ['String', 'Integer', 'Boolean', 'User', 'Channel', 'Role', 'Mentionable', 'Number', 'Attachment'];
+			const VALID_TYPES = [
+				'String',
+				'Integer',
+				'Boolean',
+				'User',
+				'Channel',
+				'Role',
+				'Mentionable',
+				'Number',
+				'Attachment',
+				'Subcommand',
+				'SubcommandGroup',
+			];
 			if (typeof option !== 'object' || option === null) {
 				throw new Error('options 배열의 각 항목은 객체여야 합니다.');
 			}

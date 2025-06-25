@@ -1,9 +1,8 @@
-import { REST, Routes } from 'discord.js';
+import { REST, Routes, ApplicationCommandOptionType } from 'discord.js';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { config } from 'dotenv';
 import { readdirSync } from 'node:fs';
-import { ApplicationCommandOptionType } from 'discord.js';
 
 config({ path: './src/Config/.env' });
 
@@ -18,6 +17,32 @@ const OPTION_TYPE_MAP = {
 	Number: ApplicationCommandOptionType.Number,
 	Attachment: ApplicationCommandOptionType.Attachment,
 };
+
+// 서브커맨드 타입 숫자 직접 지정 (discord.js enum 값)
+const SUBCOMMAND_TYPE_MAP = {
+	Subcommand: 1,
+	SubcommandGroup: 2,
+};
+
+// 재귀 타입 매핑 함수
+function mapOptionTypes(option, file) {
+	const baseType = OPTION_TYPE_MAP[option.type] ?? SUBCOMMAND_TYPE_MAP[option.type];
+
+	if (!baseType) {
+		throw new Error(`지원되지 않는 옵션 타입: ${option.type} in ${file}`);
+	}
+
+	const mapped = {
+		...option,
+		type: baseType,
+	};
+
+	if (Array.isArray(option.options)) {
+		mapped.options = option.options.map((subOpt) => mapOptionTypes(subOpt, file));
+	}
+
+	return mapped;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,24 +64,12 @@ for (const folder of commandFolders) {
 		const fullPath = path.join(commandPath, file);
 		const { default: command } = await import(pathToFileURL(fullPath).href);
 
-		// 필수 속성 검사
 		if (!command?.name || !command?.description) {
 			console.warn(`[등록 무시] ${file} → name 또는 description 없음`);
 			continue;
 		}
 
-		// 🔁 옵션 타입 변환
-		const fixedOptions = (command.options || []).map((opt) => {
-			const mappedType = OPTION_TYPE_MAP[opt.type];
-			if (!mappedType) {
-				throw new Error(`지원되지 않는 옵션 타입: ${opt.type} in ${file}`);
-			}
-
-			return {
-				...opt,
-				type: mappedType,
-			};
-		});
+		const fixedOptions = (command.options || []).map((opt) => mapOptionTypes(opt, file));
 
 		commands.push({
 			name: command.name,
@@ -66,7 +79,7 @@ for (const folder of commandFolders) {
 	}
 }
 
-// 디스코드 등록 요청
+// 슬래시 명령어 등록
 const rest = new REST({ version: '10' }).setToken(token);
 
 try {

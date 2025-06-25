@@ -76,6 +76,7 @@ export function SlashDataToBuilder(cmd) {
 function addOptionsToBuilder(builder, options) {
 	for (const opt of options) {
 		const method = SUPPORTED_OPTION_TYPES[opt.type];
+		if (opt.type === 'Subcommand' || opt.type === 'SubcommandGroup') continue;
 		if (!method || typeof builder[method] !== 'function') {
 			throw new Error(`지원되지 않는 옵션 타입: '${opt.type}'`);
 		}
