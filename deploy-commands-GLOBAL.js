@@ -47,10 +47,9 @@ const rest = new REST({ version: '10' }).setToken(token);
 try {
 	console.log(`🚀 슬래시 명령어 ${commands.length}개 등록 시도 중...\n[${commands.map((e) => e.name).join(' | ')}]`);
 	// 서버 전용 명령어 등록
-	
-	const data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
+	// const data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
 	// 글로벌 명령어 등록
-	// const data = await rest.put(Routes.applicationCommands(clientId), { body: commands });
+	const data = await rest.put(Routes.applicationCommands(clientId), { body: commands });
 	console.log(`🎉 ${data.length}개 등록 완료.`);
 } catch (err) {
 	console.error('❌ 등록 실패:', err);

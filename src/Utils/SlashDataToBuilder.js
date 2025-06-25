@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChannelType } from 'discord.js';
+import { SlashCommandBuilder } from 'discord.js';
 
 const SUPPORTED_OPTION_TYPES = {
 	String: 'addStringOption',
@@ -22,6 +22,12 @@ export function SlashDataToBuilder(cmd) {
 	// 현지화 지원
 	if (cmd.nameLocalizations) builder.setNameLocalizations(cmd.nameLocalizations);
 	if (cmd.descriptionLocalizations) builder.setDescriptionLocalizations(cmd.descriptionLocalizations);
+
+	// 퍼미션 설정
+	if (cmd.defaultMemberPermissions) builder.setDefaultMemberPermissions(cmd.defaultMemberPermissions);
+
+	// 컨텍스트 설정
+	if (cmd.context) builder.setContexts(cmd.context);
 
 	for (const opt of cmd.options || []) {
 		if (!opt.name || !opt.description || !opt.type) {

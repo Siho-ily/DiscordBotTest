@@ -1,3 +1,19 @@
+import { InteractionContextType, PermissionFlagsBits } from 'discord.js';
+
+const VALID_TYPES = [
+	'String',
+	'Integer',
+	'Boolean',
+	'User',
+	'Channel',
+	'Role',
+	'Mentionable',
+	'Number',
+	'Attachment',
+	'Subcommand',
+	'SubcommandGroup',
+];
+
 export class CommandData {
 	constructor({
 		name,
@@ -9,6 +25,9 @@ export class CommandData {
 		cooldown = 0,
 		ownerOnly = false,
 		execute,
+		defaultMemberPermissions = null,
+		context = null,
+		// 추가적인 필드가 필요할 경우 여기에 추가
 	}) {
 		// name 검사
 		if (!name || typeof name !== 'string' || !name.trim()) {
@@ -43,19 +62,6 @@ export class CommandData {
 		}
 		// options 내부 객체 검사
 		for (const option of options) {
-			const VALID_TYPES = [
-				'String',
-				'Integer',
-				'Boolean',
-				'User',
-				'Channel',
-				'Role',
-				'Mentionable',
-				'Number',
-				'Attachment',
-				'Subcommand',
-				'SubcommandGroup',
-			];
 			if (typeof option !== 'object' || option === null) {
 				throw new Error('options 배열의 각 항목은 객체여야 합니다.');
 			}
@@ -103,6 +109,16 @@ export class CommandData {
 			throw new Error('execute 함수는 반드시 1개의 인자(context)를 받아야 합니다.');
 		}
 
+		// defaultMemberPermissions 검사
+		if (defaultMemberPermissions && typeof defaultMemberPermissions !== 'bigint') {
+			throw new Error('defaultMemberPermissions는 PermissionFlagsBits 객체이어야 합니다.');
+		}
+
+		// context 검사
+		if (context && !(context instanceof InteractionContextType)) {
+			throw new Error('context는 InteractionContextType 객체이어야합니다.');
+		}
+
 		// 값 할당
 		this.name = name;
 		this.aliases = aliases;
@@ -113,5 +129,7 @@ export class CommandData {
 		this.cooldown = cooldown;
 		this.ownerOnly = ownerOnly;
 		this.execute = execute;
+		this.defaultMemberPermissions = defaultMemberPermissions;
+		this.context = context;
 	}
 }

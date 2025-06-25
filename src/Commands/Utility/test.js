@@ -1,3 +1,4 @@
+import { InteractionContextType, PermissionFlagsBits } from 'discord.js';
 import { CommandData } from '../../structures/BaseCommand.js';
 
 export default new CommandData({
@@ -7,6 +8,8 @@ export default new CommandData({
 	description: '테스트용 커맨드입니다.',
 	cooldown: 1000,
 	ownerOnly: false,
+	defaultMemberPermissions: PermissionFlagsBits.BanMembers | PermissionFlagsBits.KickMembers,
+	context: InteractionContextType.Guild,
 	options: [
 		{
 			name: 'subcommand',
@@ -75,10 +78,6 @@ export default new CommandData({
 							description: '그룹 2 옵션 C',
 							type: 'Boolean',
 							required: true,
-							choices: [
-								{ name: '참', value: true },
-								{ name: '거짓', value: false },
-							],
 						},
 						{
 							name: 'option-d',
@@ -104,21 +103,21 @@ export default new CommandData({
 			reply += `- Subcommand Group: \`${group ?? '없음'}\`\n`;
 			reply += `- Subcommand: \`${sub ?? '없음'}\`\n`;
 
-			if (!group && sub === 'subcommand') {
+			if (sub === 'subcommand') {
 				const option1 = context.options.getString('option1');
 				const option2 = context.options.getInteger('option2');
 				reply += `- option1: \`${option1}\`\n`;
 				reply += `- option2: \`${option2 ?? '없음'}\`\n`;
 			}
 
-			if (group === 'group1' && sub === 'group1') {
+			if (group === 'subcommandgroup' && sub === 'group1') {
 				const optionA = context.options.getString('option-a');
 				const optionB = context.options.getNumber('option-b');
 				reply += `- option-a: \`${optionA}\`\n`;
 				reply += `- option-b: \`${optionB ?? '없음'}\`\n`;
 			}
 
-			if (group === 'group2' && sub === 'group2') {
+			if (group === 'subcommandgroup' && sub === 'group2') {
 				const optionC = context.options.getBoolean('option-c');
 				const optionD = context.options.getChannel('option-d');
 				reply += `- option-c: \`${optionC}\`\n`;
