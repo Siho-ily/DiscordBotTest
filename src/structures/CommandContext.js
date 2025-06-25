@@ -1,3 +1,5 @@
+import { MessageFlags } from 'discord.js';
+
 export class CommandContext {
 	constructor({ message = null, interaction = null, args = [] }) {
 		this.type = message ? 'prefix' : 'slash';
@@ -19,6 +21,17 @@ export class CommandContext {
 
 			if (this.type === 'prefix') return message.reply(content);
 			if (this.type === 'slash') return interaction.reply(content);
+		};
+
+		this.deferReply = (options) => {
+			if (this.type === 'slash') return this.interaction.deferReply(options);
+			if (this.type === 'prefix')
+				return message.reply({ content: '슬래시 명령어에서만 사용 가능한 기능입니다.', flags: MessageFlags.Ephemeral });
+		};
+
+		this.editReply = (options) => {
+			if (this.type === 'slash') return this.interaction.editReply(options);
+			throw new Error('editReply는 슬래시 명령어에서만 사용할 수 있습니다.');
 		};
 
 		this.getOption = (name) => {
