@@ -1,68 +1,52 @@
-import { Collection, Events, InteractionType, MessageFlags } from 'discord.js';
+import { Collection, Events, MessageFlags } from 'discord.js';
 import { config } from 'dotenv';
 import { CommandContext } from '../structures/CommandContext.js';
 
 config({ path: './src/Config/.env' });
 const owners = process.env.OWNERS.split(',');
-
 const cooldown = new Collection();
 
 export const event = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
-		const { client } = interaction;
-		if (!interaction.type === InteractionType.ApplicationCommand) {
-			return;
+		if (!interaction.isChatInputCommand()) return;
+		if (interaction.user.bot) return;
+
+		const command = interaction.client.slashCommands.get(interaction.commandName);
+		if (!command) return;
+
+		if (command.ownerOnly && !owners.includes(interaction.user.id)) {
+			return interaction.reply({
+				content: '🔒 이 명령어는 개발자만 사용할 수 있습니다.',
+				flags: MessageFlags.Ephemeral,
+			});
 		}
-		if (interaction.user.bot) {
-			return;
+
+		const ctx = new CommandContext({ interaction });
+
+		// 쿨타임 처리
+		if (command.cooldown) {
+			const key = `${command.name}-${interaction.user.id}`;
+			const now = Date.now();
+
+			if (cooldown.has(key) && cooldown.get(key) > now) {
+				const remaining = Math.floor(cooldown.get(key) / 1000);
+				return interaction.reply({
+					content: `⏳ 쿨타임 중입니다. <t:${remaining}:R>에 다시 시도해주세요.`,
+					flags: MessageFlags.Ephemeral,
+				});
+			}
+
+			cooldown.set(key, now + command.cooldown);
+			setTimeout(() => cooldown.delete(key), command.cooldown);
 		}
 
 		try {
-			const command = client.slashCommands.get(interaction.commandName);
-			if (command) {
-				if (command.ownerOnly && !owners.includes(interaction.user.id)) {
-					return interaction.reply({
-						content: '**developers**만 이 명령어를 사용할 수 있습니다..',
-						flags: MessageFlags.Ephemeral,
-					});
-				}
-
-				if (command.cooldown) {
-					if (cooldown.has(`${command.name}-${interaction.user.id}`)) {
-						const nowDate = interaction.createdTimestamp;
-						const waitedDate = cooldown.get(`${command.name}-${interaction.user.id}`) - nowDate;
-						return interaction
-							.reply({
-								content: `현재 쿨타임중입니다. 나중에 다시 시도하여주세요. <t:${Math.floor(
-									new Date(nowDate + waitedDate).getTime() / 1000
-								)}:R>.`,
-								flags: MessageFlags.Ephemeral,
-							})
-							.then(() =>
-								setTimeout(
-									() => interaction.deleteReply(),
-									cooldown.get(`${command.name}-${interaction.user.id}`) - Date.now() + 1000
-								)
-							);
-					}
-
-					const context = new CommandContext({ interaction });
-					await command.execute(context);
-
-					cooldown.set(`${command.name}-${interaction.user.id}`, Date.now() + command.cooldown);
-
-					setTimeout(() => {
-						cooldown.delete(`${command.name}-${interaction.user.id}`);
-					}, command.cooldown + 1000);
-				} else {
-					command.slashRun(client, interaction);
-				}
-			}
+			await command.execute(ctx);
 		} catch (e) {
-			console.error(`[InteractionCreate] 명령어 실행 중 오류 발생`, e);
-			interaction.reply({
-				content: '오류가 발생하였습니다. 나중에 다시 시도하여주세요.',
+			console.error(`[InteractionCreate] 명령어 실행 중 오류 발생:`, e);
+			return interaction.reply({
+				content: '❌ 오류가 발생하였습니다. 나중에 다시 시도해주세요.',
 				flags: MessageFlags.Ephemeral,
 			});
 		}
