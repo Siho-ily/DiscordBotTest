@@ -1,9 +1,11 @@
-import { Collection, Events, MessageFlags } from 'discord.js';
+import { Collection } from 'discord.js';
 import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { config } from 'dotenv';
+import { SlashDataToBuilder } from '../Utils/SlashDataToBuilder.js';
 
 config({ path: './src/Config/.env' });
-const prefix = process.env.PREFIX;
 
 export default async function commandHandler(client) {
 	client.commands = new Collection();
@@ -11,49 +13,51 @@ export default async function commandHandler(client) {
 	client.slashCommands = new Collection();
 	client.slashDatas = [];
 
-	// - Handlers -
-	const commandFolders = readdirSync('./src/Commands');
+	const commandsPath = join(process.cwd(), 'src', 'Commands');
+	const commandFolders = readdirSync(commandsPath);
 
-	await Promise.all(
-		commandFolders.map(async (category) => {
-			const commandFiles = readdirSync(`./src/Commands/${category}`);
+	for (const category of commandFolders) {
+		const folderPath = join(commandsPath, category);
+		const commandFiles = readdirSync(folderPath).filter((f) => f.endsWith('.js'));
 
-			await Promise.all(
-				commandFiles.map(async (file) => {
-					// js 파일이 아니면 무시
-					if (!file.endsWith('.js')) return;
+		for (const file of commandFiles) {
+			const fullPath = join(folderPath, file);
+			const module = await import(pathToFileURL(fullPath).href);
+			const command = module?.default;
 
-					// 파일 경로 및 모듈 가져오기
-					const path = `../Commands/${category}/${file}`;
-					const module = await import(path);
-					const command = module?.commandBase;
+			if (!command) {
+				console.warn(`[무시됨] ${file} → 기본 내보내기 없음`);
+				continue;
+			}
 
-					if (!command) {
-						console.warn(`[Commands]: commandBase가 정의되지 않아 무시되었습니다. 경로: '${path}'`);
-						return;
-					}
+			registerCommand(client, command, pathToFileURL(fullPath).href);
+		}
+	}
+}
 
-					// prefixData와 slashData가 모두 정의되지 않은 경우 경고 메시지 출력하고 무시
-					if (!command.prefixData && !command.slashCommands) {
-						console.warn(`[Commands]: prefixData 혹은 slashData 중 하나 이상 정의되지 않아 무시되었습니다.  경로: '${path}'`);
-						return;
-					}
+function registerCommand(client, command, fileURL) {
+	// 기본 검증
+	if (!command.name || typeof command.execute !== 'function') {
+		console.warn(`[무시됨] ${command?.name ?? '알 수 없음'} → 필수 속성 누락`);
+		return;
+	}
 
-					// Handle prefix command
-					if (command.prefixData) {
-						client.commands.set(command.prefixData.name, command);
-						if (Array.isArray(command.prefixData.aliases)) {
-							command.prefixData.aliases.forEach((alias) => client.commandAliases.set(alias, command.prefixData.name));
-						}
-					}
+	command.__filePath = fileURL;
 
-					// Handle slash command
-					if (command.slashData) {
-						client.slashDatas.push(command.slashData.toJSON());
-						client.slashCommands.set(command.slashData.name, command);
-					}
-				})
-			);
-		})
-	);
+	// Prefix 등록
+	client.commands.set(command.name, command);
+	for (const alias of command.aliases || []) {
+		client.commandAliases.set(alias, command.name);
+	}
+
+	// Slash 등록
+	if (command.description && Array.isArray(command.options)) {
+		try {
+			const builder = SlashDataToBuilder(command);
+			client.slashDatas.push(builder.toJSON());
+			client.slashCommands.set(command.name, command);
+		} catch (e) {
+			throw new Error(`슬래시 명령어 등록 실패: ${command.name} - ${e.message}`);
+		}
+	}
 }

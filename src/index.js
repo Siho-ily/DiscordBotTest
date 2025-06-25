@@ -7,11 +7,11 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 
 // 모듈 가져오기
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import { loadInitHandlers } from './Handlers/mainHandler.js';
 
 // env 파일 로드 및 환경 변수 세팅
-dotenv.config({ path: './src/Config/.env' });
+config({ path: './src/Config/.env' });
 const token = process.env.TOKEN;
 
 // Create a new client instance

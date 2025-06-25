@@ -1,21 +1,16 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { BaseCommand } from '../../structures/BaseCommand.js';
+import { CommandData } from '../../structures/BaseCommand.js';
 
-export const commandBase = new BaseCommand({
-	prefixData: {
-		name: 'ping',
-		aliases: ['pong'],
-	},
-	slashData: new SlashCommandBuilder().setName('ping').setDescription('Pong!'),
-	// 1 s = 1000 ms / 0으로 설정하면 쿨타임이 없음
+export default new CommandData({
+	name: 'ping',
+	allowPrefix: true,
+	aliases: ['핑'],
+	options: [], // slash 명령어 옵션 없을 경우 비워도 OK
+	description: '봇의 응답을 확인합니다.',
 	cooldown: 1000,
-	// 관리자만 사용하려면 true로 설정
 	ownerOnly: false,
-	// 응답 처리
-	async prefixRun(client, message) {
-		message.reply('Pong 🏓');
-	},
-	async slashRun(client, interaction) {
-		interaction.reply('Pong 🏓');
+
+	async execute(context) {
+		const ping = context.client.ws.ping;
+		return context.reply(`Pong 🏓 핑 속도는 ${await ping} 입니다!`);
 	},
 });

@@ -1,5 +1,6 @@
 import { Collection, Events, InteractionType } from 'discord.js';
 import { config } from 'dotenv';
+import { CommandContext } from '../structures/CommandContext.js';
 
 config({ path: './src/Config/.env' });
 const owners = process.env.OWNERS.split(',');
@@ -46,7 +47,8 @@ export const event = {
 							);
 					}
 
-					command.slashRun(client, interaction);
+					const context = new CommandContext({ interaction });
+					await command.execute(context);
 
 					cooldown.set(`${command.name}-${interaction.user.id}`, Date.now() + command.cooldown);
 
