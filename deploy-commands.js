@@ -45,13 +45,33 @@ for (const folder of commandFolders) {
 const rest = new REST({ version: '10' }).setToken(token);
 
 try {
-	console.log(`🚀 슬래시 명령어 ${commands.length}개 등록 시도 중...\n[${commands.map((e) => e.name).join(' | ')}]`);
-	// 서버 전용 명령어 등록
-	
-	const data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
-	// 글로벌 명령어 등록
-	// const data = await rest.put(Routes.applicationCommands(clientId), { body: commands });
-	console.log(`🎉 ${data.length}개 등록 완료.`);
+	// 글로벌, 초기화, 리셋 flag
+	const globalFlag = process.env.GLOBAL_COMMANDS === 'true' ? true : false;
+	const initFlag = process.env.INIT_COMMANDS === 'true' ? true : false;
+	const resetFlag = process.env.RESET_COMMANDS === 'true' ? true : false;
+	let data;
+
+	console.log(`🔧 명령어 등록 시작... (글로벌: ${globalFlag}, 초기화: ${initFlag}, 리셋: ${resetFlag}`);
+	if (resetFlag) {
+		console.log('🔄 기존 명령어 삭제 중...');
+		await rest.put(Routes.applicationCommands(clientId), { body: [] });
+		await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
+		console.log('기존 명령어 삭제 완료.');
+	} else {
+		console.log(`🚀 슬래시 명령어 ${commands.length}개 등록 시도 중...\n[${commands.map((e) => e.name).join(' | ')}]`);
+
+		if (globalFlag) {
+			// 글로벌 명령어 등록
+			initFlag === true ? await rest.put(Routes.applicationCommands(clientId), { body: [] }) : null;
+			data = await rest.put(Routes.applicationCommands(clientId), { body: commands });
+		} else {
+			// 서버 전용 명령어 등록
+			initFlag === true ? await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] }) : null;
+			data = await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
+		}
+	}
+
+	console.log(`🎉 ${data.length}개 등록 완료!`);
 } catch (err) {
 	console.error('❌ 등록 실패:', err);
 }
