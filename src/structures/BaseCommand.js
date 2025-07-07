@@ -1,4 +1,4 @@
-import { InteractionContextType, PermissionFlagsBits } from 'discord.js';
+import { InteractionContextType } from 'discord.js';
 
 const VALID_TYPES = [
 	'String',
